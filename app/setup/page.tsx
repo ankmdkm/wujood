@@ -86,8 +86,8 @@ export default function SetupPage() {
               <circle cx="47.5" cy="51" r="5.5" fill="#22C55E"/>
             </svg>
           </div>
-          <h1 className="text-2xl font-bold text-white">أكملت التحقق! 🎉</h1>
-          <p className="text-gray-400 text-sm mt-1">أدخل بيانات متجرك لتبدأ</p>
+          <h1 className="text-2xl font-bold text-white">أهلاً بك في وجود!</h1>
+          <p className="text-gray-400 text-sm mt-1">أدخل بيانات متجرك لتبدأ البيع</p>
         </div>
 
         <div className="bg-white/5 border border-white/10 rounded-2xl p-8 backdrop-blur-sm">

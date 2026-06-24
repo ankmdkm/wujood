@@ -83,7 +83,7 @@ const features = [
 
 const stats = [
   { value: "٥", unit: "دقائق", label: "لإنشاء متجرك الأول" },
-  { value: "٠", unit: "رسوم", label: "للبدء — مجاني تماماً" },
+  { value: "صفر", unit: "رسوم", label: "للبدء مجاناً" },
   { value: "٢٤", unit: "/٧", label: "إشعارات فورية" },
 ];
 

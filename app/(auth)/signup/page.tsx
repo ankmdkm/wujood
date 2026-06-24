@@ -1,5 +1,6 @@
 "use client";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 
@@ -19,11 +20,11 @@ function DarkInput({
 }
 
 export default function SignupPage() {
+  const router = useRouter();
   const supabase = createClient();
   const [form, setForm] = useState({ email: "", password: "" });
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  const [emailSent, setEmailSent] = useState(false);
 
   const set = (k: string) => (e: React.ChangeEvent<HTMLInputElement>) =>
     setForm(f => ({ ...f, [k]: e.target.value }));
@@ -33,57 +34,35 @@ export default function SignupPage() {
     setLoading(true);
     setError("");
 
-    const { error: authErr } = await supabase.auth.signUp({
-      email: form.email,
-      password: form.password,
-      options: {
-        emailRedirectTo: `${window.location.origin}/auth/callback`,
-      },
+    // Step 1: create user server-side (no email sent, confirmed immediately)
+    const res = await fetch("/api/auth/signup", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email: form.email, password: form.password }),
     });
 
-    if (authErr) {
-      const msgs: Record<string, string> = {
-        "User already registered": "هذا البريد الإلكتروني مسجل مسبقاً — سجل دخولك",
-        "Password should be at least 6 characters": "كلمة المرور قصيرة جداً (٦ أحرف على الأقل)",
-        "Invalid email": "البريد الإلكتروني غير صحيح",
-        "Email rate limit exceeded": "حاولت كثيراً، انتظر قليلاً ثم أعد المحاولة",
-      };
-      setError(msgs[authErr.message] ?? `حدث خطأ: ${authErr.message}`);
+    const result = await res.json();
+
+    if (!res.ok) {
+      setError(result.error ?? "حدث خطأ، حاول مرة أخرى");
       setLoading(false);
       return;
     }
 
-    setEmailSent(true);
-    setLoading(false);
-  }
+    // Step 2: sign in to get a session
+    const { error: signInErr } = await supabase.auth.signInWithPassword({
+      email: form.email,
+      password: form.password,
+    });
 
-  if (emailSent) {
-    return (
-      <main className="min-h-screen bg-[#0B1220] flex items-center justify-center p-4" dir="rtl">
-        <div className="w-full max-w-md text-center">
-          <div className="w-16 h-16 bg-green-500/10 border border-green-500/20 rounded-2xl flex items-center justify-center mx-auto mb-6">
-            <svg className="w-8 h-8 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-                d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
-            </svg>
-          </div>
-          <h2 className="text-2xl font-bold text-white mb-3">تفقد بريدك الإلكتروني</h2>
-          <p className="text-gray-300 text-sm leading-relaxed mb-2">
-            تم إرسال رابط التأكيد لإيميلك
-          </p>
-          <p className="text-white font-semibold mb-4" dir="ltr">{form.email}</p>
-          <p className="text-gray-400 text-sm leading-relaxed">
-            أكد إيميلك ثم سجل دخولك لإكمال إعداد متجرك.<br/>
-            لم يصلك البريد؟ تفقد مجلد الـ Spam.
-          </p>
-          <Link
-            href="/login"
-            className="inline-block mt-8 bg-gradient-to-l from-[#1E40AF] to-[#2563EB] text-white px-8 py-3 rounded-xl text-sm font-bold hover:from-[#1d39a0] hover:to-[#1d4ed8] transition-all">
-            سجل دخولك الآن
-          </Link>
-        </div>
-      </main>
-    );
+    if (signInErr) {
+      setError("تم إنشاء الحساب، لكن تعذر تسجيل الدخول — حاول مجدداً");
+      setLoading(false);
+      return;
+    }
+
+    // Step 3: go to setup to create the store
+    router.push("/setup");
   }
 
   return (
