@@ -3,12 +3,12 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { Package, MessageCircle } from "lucide-react";
 
-export default async function StorefrontPage({ params }: { params: { slug: string } }) {
-  const supabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  );
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+)
 
+export default async function StorefrontPage({ params }: { params: { slug: string } }) {
   const { data: store } = await supabase.from("stores").select("*").eq("slug", params.slug).eq("is_active", true).single();
   if (!store) notFound();
 
