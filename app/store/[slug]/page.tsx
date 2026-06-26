@@ -1,10 +1,14 @@
-import { createClient } from "@/lib/supabase/server";
+import { createClient } from "@supabase/supabase-js";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { Package, MessageCircle } from "lucide-react";
 
 export default async function StorefrontPage({ params }: { params: { slug: string } }) {
-  const supabase = await createClient();
+  const supabase = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  );
+
   const { data: store } = await supabase.from("stores").select("*").eq("slug", params.slug).eq("is_active", true).single();
   if (!store) notFound();
 
@@ -12,7 +16,6 @@ export default async function StorefrontPage({ params }: { params: { slug: strin
 
   return (
     <div className="min-h-screen bg-gray-50" dir="rtl">
-      {/* Store header */}
       <header className="bg-white border-b border-gray-100 sticky top-0 z-10">
         <div className="max-w-5xl mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -35,7 +38,6 @@ export default async function StorefrontPage({ params }: { params: { slug: strin
         </div>
       </header>
 
-      {/* Hero */}
       {store.description && (
         <div className="bg-[#1E40AF] text-white py-12 text-center">
           <h2 className="text-2xl font-bold mb-2">{store.name}</h2>
@@ -43,7 +45,6 @@ export default async function StorefrontPage({ params }: { params: { slug: strin
         </div>
       )}
 
-      {/* Products */}
       <main className="max-w-5xl mx-auto px-4 py-10">
         {!products?.length ? (
           <div className="text-center py-24">
@@ -78,7 +79,6 @@ export default async function StorefrontPage({ params }: { params: { slug: strin
         )}
       </main>
 
-      {/* Footer */}
       <footer className="text-center py-8 text-gray-400 text-xs border-t border-gray-100 mt-10">
         مدعوم من <Link href="/" className="text-[#1E40AF] font-medium">وجود</Link>
       </footer>
